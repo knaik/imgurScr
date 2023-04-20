@@ -1,0 +1,9 @@
+# ignore ALL images files all files should download to folder
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.webp
+
+# ignore ALL files in ANY directory named dlimages
+dlimages/
