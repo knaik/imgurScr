@@ -4,7 +4,9 @@ import random
 import requests
 import threading 
 
-
+otherErr = []
+notFound = []
+oth = []
 def scraper(urlChars, stop_event, urlSize):
     dir = "dlimages"
     if not os.path.exists(dir):
@@ -18,15 +20,23 @@ def scraper(urlChars, stop_event, urlSize):
                 r = requests.get(url, stream=True, allow_redirects=False)
                 if not (r.status_code == 302): #print('Valid[+]:'+img)
                     with open(os.path.join(dir, img)+".jpg", 'wb') as f:
-                        for chunk in r.iter_content(1024):
+                        for chunk in r.iter_content(4096):
                             f.write(chunk)
-                        print("written ",img,f.tell())
-                # else: #print('notvalid[-]:'+img)
-            else:                              
-                print(response, url)                
+                        size = f.tell()//1024
+                        if (size//1024>=1):
+                            print("written ",img,str(size//1024)+"mb")
+                        elif (f.tell() <= 1024):
+                            print("written ",img,str(f.tell())+"b")
+                        else:
+                            print("written ",img,str(size)+"kb") # f.tell())
+            elif (response.status_code == 302):                              
+                otherErr.append(img)
+            elif (response.status_code == 404):                              
+                notFound.append(img)
+            else:
+                oth.append(img)
             pass
         except requests.exceptions.HTTPError as err:
-            print('NOT valid[-]:'+url)
             pass
             
 thr = int(input("how many threads? "))
@@ -45,6 +55,14 @@ try:
 except KeyboardInterrupt:
     print("Program terminated by user.")
     stop_event.set()
+    if (len(otherErr)):
+        print("302 ", otherErr)
+    if (len(notFound)):
+        print("404 ", notFound)
+    if (len(oth)):
+        print("other ", oth)
+
+
 
 for t in threads:
     t.join()
