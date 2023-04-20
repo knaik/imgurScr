@@ -28,16 +28,15 @@ def scraper(urlChars, stop_event, urlSize):
     if not os.path.exists(dir):
         os.mkdir(dir)
     while not stop_event.is_set():
-        start_time = time.perf_counter()
         try:  
             img = ''.join(random.choices(urlChars,k=urlSize)) 
             url = 'https://' + 'i.imgur.com' + '/' + img + '.jpg'  
+            start_time = time.process_time()
             response = requests.head(url)            
             if response.status_code == 200: #assuming 404 not possible, avoiding redirects
                 r = requests.get(url, headers=headers, stream=True, allow_redirects=False, timeout=20)
                 instStat.count = instStat.count + 1
-                if not (r.status_code == 302): #print('Valid[+]:'+img)
-                    
+                if not (r.status_code == 302): #print('Valid[+]:'+img)                    
                     total_operations += 1
                     instName = threading.current_thread().ident
                     with open(os.path.join(dir, img)+".jpg", 'wb') as f:
@@ -45,19 +44,19 @@ def scraper(urlChars, stop_event, urlSize):
                             f.write(chunk)
                         size = f.tell()//1024
                         if (size//1024>=1):
-                            end_time = time.perf_counter()
+                            end_time = time.process_time()
                             elapsed_time = (end_time - start_time) * 1000 # convert to milliseconds
-                            rate = int(f.tell()//elapsed_time)
+                            rate = float((f.tell()/elapsed_time)/125)
                             print((instStat.num+":").ljust(6),str(instStat.count).ljust(4)+str(total_operations).rjust(4),img.rjust(7),(str(size//1024)+"mb").rjust(7),str(int(floor(elapsed_time)))+"ms",rate)
                         elif (f.tell() <= 1024):
-                            end_time = time.perf_counter()
+                            end_time = time.process_time()
                             elapsed_time = (end_time - start_time) * 1000 # convert to milliseconds
-                            rate = int(f.tell()//elapsed_time)
+                            rate = float((f.tell()/elapsed_time)/125)
                             print((instStat.num+":").ljust(6),str(instStat.count).ljust(4)+str(total_operations).rjust(4),img.rjust(7),(str(f.tell())+"bb").rjust(7),str(int(floor(elapsed_time)))+"ms",rate)
                         else:
-                            end_time = time.perf_counter()
+                            end_time = time.process_time()
                             elapsed_time = (end_time - start_time) * 1000 # convert to milliseconds
-                            rate = int(f.tell()//elapsed_time)
+                            rate = float((f.tell()/elapsed_time)/125)
                             print((instStat.num+":").ljust(6),str(instStat.count).ljust(4)+str(total_operations).rjust(4),img.rjust(7),(str(size)+"kb").rjust(7),str(int(floor(elapsed_time)))+"ms",rate) # f.tell())
             elif (response.status_code == 302):                              
                 otherErr.append(img)
@@ -65,7 +64,7 @@ def scraper(urlChars, stop_event, urlSize):
                 notFound.append(img)
             else:
                 oth.append(img)
-            end_time = time.perf_counter()
+            end_time = time.process_time()
             elapsed_time = (end_time - start_time) * 1000 # convert to milliseconds
             #print("Elapsed time:", elapsed_time, "milliseconds")
             pass
