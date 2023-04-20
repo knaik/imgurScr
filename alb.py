@@ -10,33 +10,21 @@ headers = {
 otherErr = []
 notFound = []
 oth = []
-count = 1
-
 def scraper(urlChars, stop_event, urlSize):
     dir = "dlimages"
-    count = 1
-    instName = nam.pop()
     if not os.path.exists(dir):
         os.mkdir(dir)
     while not stop_event.is_set():
         try:  
             img = ''.join(random.choices(urlChars,k=urlSize)) 
-            url = 'https://' + 'i.imgur.com' + '/' + img + '.jpg'  
+            url = 'https://' + 'imgur.com' + '/a' + '/'+ img  
             response = requests.head(url)            
             if response.status_code == 200: #assuming 404 not possible, avoiding redirects
-                r = requests.get(url, headers=headers, stream=True, allow_redirects=False, timeout=20)
                 count = count + 1
+                
+                r = requests.get(url, headers=headers, stream=True, allow_redirects=False, timeout=20)
                 if not (r.status_code == 302): #print('Valid[+]:'+img)
-                    with open(os.path.join(dir, img)+".jpg", 'wb') as f:
-                        for chunk in r.iter_content(4096):
-                            f.write(chunk)
-                        size = f.tell()//1024
-                        if (size//1024>=1):
-                            print("written ",img.rjust(7),(str(size//1024)+"mb").rjust(7),str(count).rjust(7),instName+" inst")
-                        elif (f.tell() <= 1024):
-                            print("written ",img.rjust(7),(str(f.tell())+".b").rjust(7),str(count).rjust(7),instName+" inst")
-                        else:
-                            print("written ",img.rjust(7),(str(size)+"kb").rjust(7),str(count).rjust(7),instName+" inst") # f.tell())
+                    print(url)
             elif (response.status_code == 302):                              
                 otherErr.append(img)
             elif (response.status_code == 404):                              
@@ -53,9 +41,8 @@ urlChars = list('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890'
 stop_event = threading.Event()
 threads = []
 
-nam = ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"]
-
-for i in [5,5,5,5,5,6,6,6,7,7]: #range(thr):
+count=0
+for i in [5,5,5,5,6,6,7,7]: #range(thr):
     # lgth = i%3 + 5 # urlSize
     t = threading.Thread(target=scraper, args=(urlChars, stop_event,i))
     t.start()
