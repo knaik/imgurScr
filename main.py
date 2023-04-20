@@ -34,7 +34,7 @@ def scraper(urlChars, stop_event, urlSize):
             start_time = time.process_time()
             response = requests.head(url)            
             if response.status_code == 200: #assuming 404 not possible, avoiding redirects
-                r = requests.get(url, headers=headers, stream=True, allow_redirects=False, timeout=20)
+                r = requests.get(url, headers=headers, stream=True, allow_redirects=False, timeout=200)
                 instStat.count = instStat.count + 1
                 if not (r.status_code == 302): #print('Valid[+]:'+img)                    
                     total_operations += 1
@@ -42,22 +42,22 @@ def scraper(urlChars, stop_event, urlSize):
                     with open(os.path.join(dir, img)+".jpg", 'wb') as f:
                         for chunk in r.iter_content(2048):
                             f.write(chunk)
-                        size = f.tell()//1024
+                        size = f.tell()//1000 #this conversion was wrong
                         if (size//1024>=1):
                             end_time = time.process_time()
                             elapsed_time = (end_time - start_time) * 1000 # convert to milliseconds
-                            rate = float((f.tell()/elapsed_time)/125)
-                            print((instStat.num+":").ljust(6),str(instStat.count).ljust(4)+str(total_operations).rjust(4),img.rjust(7),(str(size//1024)+"mb").rjust(7),str(int(floor(elapsed_time)))+"ms",rate)
+                            rate = float(8*(size/elapsed_time))
+                            print((instStat.num+":").ljust(6),str(instStat.count).ljust(4)+str(total_operations).rjust(4),img.rjust(7),(str(size//1024)+"mb").rjust(7),str(int(floor(elapsed_time)))+"ms",str('%.3f'%rate)+"mbps")
                         elif (f.tell() <= 1024):
                             end_time = time.process_time()
                             elapsed_time = (end_time - start_time) * 1000 # convert to milliseconds
-                            rate = float((f.tell()/elapsed_time)/125)
-                            print((instStat.num+":").ljust(6),str(instStat.count).ljust(4)+str(total_operations).rjust(4),img.rjust(7),(str(f.tell())+"bb").rjust(7),str(int(floor(elapsed_time)))+"ms",rate)
+                            rate = float(8*(size/elapsed_time))
+                            print((instStat.num+":").ljust(6),str(instStat.count).ljust(4)+str(total_operations).rjust(4),img.rjust(7),(str(f.tell())+"bb").rjust(7),str(int(floor(elapsed_time)))+"ms",str('%.3f'%rate)+"mbps")
                         else:
                             end_time = time.process_time()
                             elapsed_time = (end_time - start_time) * 1000 # convert to milliseconds
-                            rate = float((f.tell()/elapsed_time)/125)
-                            print((instStat.num+":").ljust(6),str(instStat.count).ljust(4)+str(total_operations).rjust(4),img.rjust(7),(str(size)+"kb").rjust(7),str(int(floor(elapsed_time)))+"ms",rate) # f.tell())
+                            rate = float(8*(size/elapsed_time))
+                            print((instStat.num+":").ljust(6),str(instStat.count).ljust(4)+str(total_operations).rjust(4),img.rjust(7),(str(size)+"kb").rjust(7),str(int(floor(elapsed_time)))+"ms",str('%.3f'%rate)+"mbps") # f.tell())
             elif (response.status_code == 302):                              
                 otherErr.append(img)
             elif (response.status_code == 404):                              
