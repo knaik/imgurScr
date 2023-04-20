@@ -51,7 +51,7 @@ def scraper(urlChars, stop_event, urlSize):
                             total_download = total_download + f.tell()
                             dlfloat = total_download/1000000
                             end_time = time.perf_counter()
-                            elapsed_time = (end_time - start_time) * 1000 # convert to milliseconds
+                            elapsed_time = (end_time - start_time) * 1000 # convert to milliseconds  #if you subtract against global, you get cumulative time, not per download
                             total_seconds =  elapsed_time + total_seconds
                             rate = float(8*(size/elapsed_time))
                             #totalrate = (dlfloat/elapsed_time)/1000
@@ -95,7 +95,7 @@ threads = []
 
 nam = ["seven", "six", "five", "four", "three", "two", "one"]
 
-st_time = time.process_time()
+st_time = time.perf_counter()
 
 for i in [5,5,5,5,6,6,7]: #range(thr):
     # lgth = i%3 + 5 # urlSize
@@ -107,14 +107,18 @@ try:
         #print(st_time)
         pass
 except KeyboardInterrupt:
-    print("Program terminated by user.")
+    #print("Program terminated by user.")
     stop_event.set()
-    ed_time = time.process_time()
-    print(ed_time)
+    ed_time = time.perf_counter()
+    #print(ed_time)
     el_time = (ed_time - st_time) * 1000
-    print(str(str(el_time)+"ms"))
-    print(str(total_seconds//1000)+"s")
-    print(total_download/1000000)
+    #print(str(str(el_time)+"ms"))
+    #print(str(total_seconds//1000)+"s")
+    print(el_time,"s")
+    print(str(total_download/1000000),"megabytes")
+    finr = ((total_download*8)/1000000)/(el_time/1000)
+    print(str('%.3f'%finr)+"mbps")
+    #if you subtract against global, you get cumulative time, not per download
     #if (len(otherErr)):
         # print("302: ", len(otherErr))
     if (len(notFound)):
@@ -123,10 +127,19 @@ except KeyboardInterrupt:
         print("other ", len(oth))
 
 
+
 for t in threads:
     t.join()
     
     
+ed_time = time.perf_counter()
+el_time = (ed_time - st_time) * 1000
+print(el_time,"s")
+print(str(total_download/1000000),"megabytes")
+finr = ((total_download*8)/1000000)/(el_time/1000)
+print(str('%.3f'%finr)+"mmmbps")
+   
+
     
  #def
  # img,size
